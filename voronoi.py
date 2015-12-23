@@ -76,11 +76,11 @@ def get_color_of_point(point, rgb_im, width, height):
     x = int(point[0])
     y = int(point[1])
     new_point = (x, y)
-    # print(new_point)
 
     try:
         return rgb_im.getpixel(new_point)
     except:
+        # unsuer if this is needed
         print(new_point)
         new_point = list(new_point)
         if (new_point[0] == width):
@@ -90,7 +90,6 @@ def get_color_of_point(point, rgb_im, width, height):
         new_point = tuple(new_point)
         print("new point = " + str(new_point) + "\n")
         return rgb_im.getpixel(new_point)
-        # TODO deswegen hier kommen schwarze punkte
 
 
 def makeup_polygons(draw, num_cells, width, height, rgb_im):
@@ -101,36 +100,49 @@ def makeup_polygons(draw, num_cells, width, height, rgb_im):
     voronoi, points = generate_voronoi_diagram(num_cells, width, height)
 
     for point, index in zip(points, voronoi.point_region):
+        # getting the region of the given point
         region = voronoi.regions[index]
 
         if ((-1 in region) or (index is -1)):
+            # TODO deswegen hier kommen schwarze punkte
+            # print(region)
+            # polygon = list()
+            # for i in region:
+            #     polygon.append(voronoi.vertices[i])
+            # print(polygon)
             continue
 
+        # gettings the points ind arrays
         polygon = list()
         for i in region:
             polygon.append(voronoi.vertices[i])
 
+        # make tuples of the points
         polygon_tuples = list()
         for l in polygon:
             polygon_tuples.append(tuple(l))
 
-        rgb = (0, 0, 80)
-        # rgb = random_color()
+        rgb = (0, 0, 0)
 
+        # getting colors of the middle point
         if polygon and path.Path(polygon).contains_point(point):
             rgb = get_color_of_point(point, rgb_im, width, height)
 
+        # rgb = random_color()
+
+        # drawing the calculated polygon with the color of the middle point
         if polygon and polygon_tuples:
             draw.polygon(polygon_tuples, rgb)
 """
+        # for debugging
         print()
         print("Region: " + str(region))
-        # print("Polygon: " + str(polygon))
         print("Polygon-Tuppel: ")
         for vertices in polygon_tuples:
             print(vertices)
         if polygon:
-            print("Polygon contains point: " + str(path.Path(polygon).contains_point(point)))
+            print("Polygon contains point: " +
+                    str(path.Path(polygon).contains_point(point)))
         else:
             print("Error")
         if rgb != (0, 0, 80):
