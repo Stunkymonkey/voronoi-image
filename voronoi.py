@@ -16,7 +16,13 @@ parser.add_option("-c", "--count", type="string", dest="count",
 
 (options, args) = parser.parse_args()
 img_path = options.imagename
+if (img_path is None):
+    print("No image file given")
+    quit()
 num_cells = int(options.count)
+if (num_cells is None):
+    print("No amount of cells given")
+    quit()
 
 
 def random_color():
@@ -67,78 +73,69 @@ def get_color_of_point(point, rgb_im, width, height):
     """
     get the color of specific point
     """
-    x = int(point[0] + 0.5)
-    y = int(point[1] + 0.5)
+    x = int(point[0])
+    y = int(point[1])
     new_point = (x, y)
-    # print (new_point)
-
-    rgb = (0, 0, 0)
+    # print(new_point)
 
     try:
-        rgb = rgb_im.getpixel(new_point)
+        return rgb_im.getpixel(new_point)
     except:
-        print (new_point)
+        print(new_point)
         new_point = list(new_point)
         if (new_point[0] == width):
             new_point[0] -= 1
         if (new_point[1] == height):
             new_point[1] -= 1
         new_point = tuple(new_point)
-        # print (str(new_point) + "\n")
-        rgb = rgb_im.getpixel(new_point)
-        # deswegen hier kommen schwarze punkte
-    return rgb
+        print("new point = " + str(new_point) + "\n")
+        return rgb_im.getpixel(new_point)
+        # TODO deswegen hier kommen schwarze punkte
 
 
 def makeup_polygons(draw, num_cells, width, height, rgb_im):
     """
     makeup and draw polygons
     """
+    # print("calculating diagramm")
     voronoi, points = generate_voronoi_diagram(num_cells, width, height)
 
-    for region in voronoi.regions:
-        if not (-1 in region):
+    for point, index in zip(points, voronoi.point_region):
+        region = voronoi.regions[index]
 
-            # for point_region in voronoi.point_region:
-                # print (point_region)
-                # print (region[point_region])
+        if ((-1 in region) or (index is -1)):
+            continue
 
-            polygon = [voronoi.vertices[i] for i in region]
-            # print (str(polygon) + "\n")
+        polygon = list()
+        for i in region:
+            polygon.append(voronoi.vertices[i])
 
-            polygon_tuples = [tuple(l) for l in polygon]
-            # print (str(polygon_tuples) + "\n")
+        polygon_tuples = list()
+        for l in polygon:
+            polygon_tuples.append(tuple(l))
 
-            point_list = []
-            # print (points[asdf])
-            for point in points:
-                try:
-                    p = path.Path(polygon)
-                    if (p.contains_point(point)):
-                        rgb = get_color_of_point(point, rgb_im, width, height)
-                        point_list.extend(point)
-                        points.remove(point)
-                        # print (point)
-                        # print ("just found")
-                except:
-                    try:
-                        p = path.Path(polygon)
-                        if (p.contains_point(point)):
-                            rgb = get_color_of_point(
-                                point, rgb_im, width, height)
-                            point_list.extend(point)
-                            points.remove(point)
-                            # print ("just found")
-                    except:
-                        pass
-                        # print ("Found Nothing")
+        rgb = (0, 0, 80)
+        # rgb = random_color()
 
-            # rgb = random_color()
+        if polygon and path.Path(polygon).contains_point(point):
+            rgb = get_color_of_point(point, rgb_im, width, height)
 
-            # print (rgb)
-
-            if polygon_tuples:
-                draw.polygon(polygon_tuples, rgb)
+        if polygon and polygon_tuples:
+            draw.polygon(polygon_tuples, rgb)
+"""
+        print()
+        print("Region: " + str(region))
+        # print("Polygon: " + str(polygon))
+        print("Polygon-Tuppel: ")
+        for vertices in polygon_tuples:
+            print(vertices)
+        if polygon:
+            print("Polygon contains point: " + str(path.Path(polygon).contains_point(point)))
+        else:
+            print("Error")
+        if rgb != (0, 0, 80):
+            print("Color: " + str(rgb))
+"""
 
 
 def make_image(img_path, num_cells):
@@ -149,16 +146,16 @@ def make_image(img_path, num_cells):
     try:
         im = Image.open(img_path).convert('RGB')
     except (FileNotFoundError):
-        print ("Image not found")
+        print("Image not found")
         quit()
     rgb_im = im.convert('RGB')
     width, height = im.size
 
     if (num_cells > ((width * height) / 10)):
-        print ("Sorry your image ist too small, or you want to many polygons.")
+        print("Sorry your image ist too small, or you want to many polygons.")
         quit()
 
-    print ("Making the Voronoi Image...")
+    print("Making the Voronoi Image...")
 
     image = Image.new("RGB", (width, height))
     draw = ImageDraw.Draw(image)
@@ -166,6 +163,7 @@ def make_image(img_path, num_cells):
     makeup_polygons(draw, num_cells, width, height, rgb_im)
 
     path, imagename = ntpath.split(img_path)
+    imagename = imagename.split(".")[0]
     # print (imagename)
 
     image.save(imagename + "-voronoi.jpeg", "JPEG")
