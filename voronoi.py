@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 import numpy as np
 from scipy.spatial import Voronoi, voronoi_plot_2d
-from matplotlib import path
 from PIL import Image, ImageDraw
-import ntpath
+import os
 from optparse import OptionParser
 import random
 
@@ -53,7 +52,10 @@ def generate_voronoi_diagram(num_cells, width, height):
     generate voronoi diagramm as polygons
     """
     # make up data points
-    points = np.random.rand(num_cells, 2)
+    points = np.random.rand(num_cells - 4, 2)
+    default = np.array([np.array([0., 0.]), np.array(
+        [1., 0.]), np.array([0., 1.]), np.array([1., 1.])])
+    points = np.concatenate((points, default), axis=0)
     # print (points)
 
     # scale them
@@ -80,15 +82,14 @@ def get_color_of_point(point, rgb_im, width, height):
     try:
         return rgb_im.getpixel(new_point)
     except:
-        # unsuer if this is needed
-        print(new_point)
+        # unsure if this is needed
         new_point = list(new_point)
         if (new_point[0] == width):
             new_point[0] -= 1
         if (new_point[1] == height):
             new_point[1] -= 1
         new_point = tuple(new_point)
-        print("new point = " + str(new_point) + "\n")
+        # print("new point = " + str(new_point) + "\n")
         return rgb_im.getpixel(new_point)
 
 
@@ -103,19 +104,12 @@ def makeup_polygons(draw, num_cells, width, height, rgb_im):
         # getting the region of the given point
         region = voronoi.regions[index]
 
-        if ((-1 in region) or (index is -1)):
-            # TODO deswegen hier kommen schwarze punkte
-            # print(region)
-            # polygon = list()
-            # for i in region:
-            #     polygon.append(voronoi.vertices[i])
-            # print(polygon)
-            continue
-
         # gettings the points ind arrays
         polygon = list()
         for i in region:
-            polygon.append(voronoi.vertices[i])
+            # if vektor is out of plot do not add
+            if i != -1:
+                polygon.append(voronoi.vertices[i])
 
         # make tuples of the points
         polygon_tuples = list()
@@ -125,29 +119,28 @@ def makeup_polygons(draw, num_cells, width, height, rgb_im):
         rgb = (0, 0, 0)
 
         # getting colors of the middle point
-        if polygon and path.Path(polygon).contains_point(point):
-            rgb = get_color_of_point(point, rgb_im, width, height)
+        rgb = get_color_of_point(point, rgb_im, width, height)
 
+        # for random color
         # rgb = random_color()
 
         # drawing the calculated polygon with the color of the middle point
         if polygon and polygon_tuples:
             draw.polygon(polygon_tuples, rgb)
-"""
-        # for debugging
-        print()
-        print("Region: " + str(region))
-        print("Polygon-Tuppel: ")
-        for vertices in polygon_tuples:
-            print(vertices)
-        if polygon:
-            print("Polygon contains point: " +
-                    str(path.Path(polygon).contains_point(point)))
-        else:
-            print("Error")
-        if rgb != (0, 0, 80):
-            print("Color: " + str(rgb))
-"""
+
+        # for debugging:
+        # print()
+        # print("Region: " + str(region))
+        # print("Polygon-Tuppel: ")
+        # for vertices in polygon_tuples:
+        #     print(vertices)
+        # if polygon:
+        #     print("Polygon contains point: " +
+        #             str(path.Path(polygon).contains_point(point)))
+        # else:
+        #     print("Error")
+        # if rgb != (0, 0, 80):
+        #     print("Color: " + str(rgb))
 
 
 def make_image(img_path, num_cells):
@@ -166,6 +159,9 @@ def make_image(img_path, num_cells):
     if (num_cells > ((width * height) / 10)):
         print("Sorry your image ist too small, or you want to many polygons.")
         quit()
+    if num_cells <= 5:
+        print("you have to have more than 5 cells")
+        quit()
 
     print("Making the Voronoi Image...")
 
@@ -174,7 +170,7 @@ def make_image(img_path, num_cells):
 
     makeup_polygons(draw, num_cells, width, height, rgb_im)
 
-    path, imagename = ntpath.split(img_path)
+    path, imagename = os.path.split(img_path)
     imagename = imagename.split(".")[0]
     # print (imagename)
 
