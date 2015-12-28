@@ -15,3 +15,7 @@ Options:
                         amount of voronoi-points
   -r, --randomcolor     random color in picture
   ```
+
+<img src="https://github.com/Stunkymonkey/voronoi-image/blob/master/profile.jpg" width="256">
+
+<img src="https://github.com/Stunkymonkey/voronoi-image/blob/master/profile-voronoi.jpeg" width="256">
