@@ -12,6 +12,8 @@ parser.add_option("-i", "--image", type="string", dest="imagename",
                   help="Name of Image")
 parser.add_option("-c", "--count", type="string", dest="count",
                   default=0, help="amount of voronoi-points")
+parser.add_option("-r", "--randomcolor", action="store_true", dest="randomcolor",
+                  default=False, help="random color in picture")
 
 (options, args) = parser.parse_args()
 img_path = options.imagename
@@ -22,6 +24,7 @@ num_cells = int(options.count)
 if (num_cells is None):
     print("No amount of cells given")
     quit()
+randomcolor = bool(options.randomcolor)
 
 
 def random_color():
@@ -93,7 +96,7 @@ def get_color_of_point(point, rgb_im, width, height):
         return rgb_im.getpixel(new_point)
 
 
-def makeup_polygons(draw, num_cells, width, height, rgb_im):
+def makeup_polygons(draw, num_cells, width, height, rgb_im, random):
     """
     makeup and draw polygons
     """
@@ -117,12 +120,12 @@ def makeup_polygons(draw, num_cells, width, height, rgb_im):
             polygon_tuples.append(tuple(l))
 
         rgb = (0, 0, 0)
-
-        # getting colors of the middle point
-        rgb = get_color_of_point(point, rgb_im, width, height)
-
-        # for random color
-        # rgb = random_color()
+        if random:
+            # gettings random color
+            rgb = random_color()
+        else:
+            # getting colors of the middle point
+            rgb = get_color_of_point(point, rgb_im, width, height)
 
         # drawing the calculated polygon with the color of the middle point
         if polygon and polygon_tuples:
@@ -143,7 +146,7 @@ def makeup_polygons(draw, num_cells, width, height, rgb_im):
         #     print("Color: " + str(rgb))
 
 
-def make_image(img_path, num_cells):
+def make_image(img_path, num_cells, random):
     """
     make image out of the old image
     """
@@ -168,7 +171,7 @@ def make_image(img_path, num_cells):
     image = Image.new("RGB", (width, height))
     draw = ImageDraw.Draw(image)
 
-    makeup_polygons(draw, num_cells, width, height, rgb_im)
+    makeup_polygons(draw, num_cells, width, height, rgb_im, random)
 
     path, imagename = os.path.split(img_path)
     imagename = imagename.split(".")[0]
@@ -179,4 +182,4 @@ def make_image(img_path, num_cells):
 
 
 if __name__ == '__main__':
-    make_image(img_path, num_cells)
+    make_image(img_path, num_cells, randomcolor)
