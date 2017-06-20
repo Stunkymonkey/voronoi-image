@@ -9,7 +9,7 @@ import random
 
 parser = OptionParser()
 parser.add_option("-i", "--image", type="string", dest="imagename",
-                  help="Name of Image")
+                  metavar="FILE", help="Name of Image")
 parser.add_option("-c", "--count", type="string", dest="count",
                   default=0, help="amount of voronoi-points")
 parser.add_option("-r", "--randomcolor", action="store_true", dest="randomcolor",
