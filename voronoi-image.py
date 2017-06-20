@@ -131,20 +131,6 @@ def makeup_polygons(draw, num_cells, width, height, rgb_im, random):
         if polygon and polygon_tuples:
             draw.polygon(polygon_tuples, rgb)
 
-        # for debugging:
-        # print()
-        # print("Region: " + str(region))
-        # print("Polygon-Tuppel: ")
-        # for vertices in polygon_tuples:
-        #     print(vertices)
-        # if polygon:
-        #     print("Polygon contains point: " +
-        #             str(path.Path(polygon).contains_point(point)))
-        # else:
-        #     print("Error")
-        # if rgb != (0, 0, 80):
-        #     print("Color: " + str(rgb))
-
 
 def make_image(img_path, num_cells, random):
     """
@@ -166,8 +152,6 @@ def make_image(img_path, num_cells, random):
         print("you have to have more than 5 cells")
         quit()
 
-    print("Making the Voronoi Image...")
-
     image = Image.new("RGB", (width, height))
     draw = ImageDraw.Draw(image)
 
@@ -178,7 +162,7 @@ def make_image(img_path, num_cells, random):
     # print (imagename)
 
     image.save(imagename + "-voronoi.jpeg", "JPEG")
-    image.show()
+    # image.show()
 
 
 if __name__ == '__main__':
